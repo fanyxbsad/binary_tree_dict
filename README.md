@@ -1,32 +1,57 @@
-# GROUP-NAME - lab NUMBER - variant NUMBER
+# GROUP- 6 - lab 2 - variant 6
 
-This is an example project which demonstrates project structure and necessary
-CI checks. It is not the best structure for real-world projects, but good
-enough for educational purposes.
+This project demonstrates an immutable Dictionary based on a Binary
+Search Tree (BST). It adheres to a functional programming paradigm,
+utilizing purely recursive algorithms and structural sharing to avoid
+unnecessary data copying.
 
 ## Project structure
 
-- `foo.py` -- implementation of `Foo` class with `hello` and `add` features.
-   Stateless.
-- `foo_test.py` -- unit and PBT tests for `Foo`.
+- `binary_tree_dict.py` -- implementation of the immutable binary
+  tree dictionary with a functional-style API.
+- `test_binary_tree_dict.py` -- unit and Property-Based Tests
+  (PBT) for the dictionary.
 
 ## Features
 
-- PBT: `test_add_commutative`
+- PBT: `test_monoid_associativity`
+- PBT: `test_immutability_after_cons`
+- PBT: `test_immutability_after_remove`
+- Heterogeneous key support (`None`, `int`, `str` mixed safely).
 
 ## Contribution
 
-- Aleksandr Penskoi (EMAIL) -- all work.
+- Fan Yuxin (2568823977@qq.com) -- all work.
 
 ## Changelog
 
-- 29.03.2022 - 2
-  - Add test coverage.
-- 29.03.2022 - 1
-  - Update README. Add formal sections.
-- 29.03.2022 - 0
-  - Initial
+- 11.05.2026 - 2
+  - Add property-based tests for monoid laws and immutability.
+- 10.05.2026 - 1
+  - Implement functional API (`cons`, `remove`, `map`, etc.).
+- 10.05.2026 - 0
+  - Initial project structure setup.
 
 ## Design notes
 
-- ...
+- **Immutability & Structural Sharing**: Interaction with the
+  structure never mutates it. Methods like `cons` or `remove`
+  construct and return new tree instances. Unchanged subtrees are
+  directly linked (shared) to optimize memory usage.
+
+- **Pure Recursion**: The implementation strictly avoids `for` and
+  `while` loops. All traversals, mappings, and reductions are
+  achieved through recursion. Tail recursion is explicitly applied
+  in functions like `from_list` and `concat` to prevent stack
+  overflows on larger datasets.
+
+- **Heterogeneous Key Comparison**: Python 3 natively raises a
+  `TypeError` when comparing different types (e.g., `None < 1`). 
+  To pass tests with mixed-type keys, a `_key_rank` utility maps
+  types to integer priorities, ensuring safe and deterministic
+  BST ordering.
+
+- **Monoid Interface**: The structure acts as a monoid with
+  `empty()` as the identity element and `concat()` as the binary
+  operation. Property tests verify both left/right identity and
+  associativity laws.
