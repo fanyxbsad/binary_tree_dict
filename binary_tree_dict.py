@@ -38,8 +38,8 @@ class _Node:
         self,
         key: Any,
         value: Any,
-        left: Optional['_Node'] = None,    # 修复 1: 加上 Optional
-        right: Optional['_Node'] = None    # 修复 2: 加上 Optional
+        left: Optional['_Node'] = None,
+        right: Optional['_Node'] = None
     ):
         self.key = key
         self.value = value
@@ -50,7 +50,7 @@ class _Node:
 class BinaryTreeDict:
     """External representation of immutable binary tree dict."""
 
-    def __init__(self, root: Optional[_Node] = None):  # 修复 3: 加上 Optional
+    def __init__(self, root: Optional[_Node] = None):
         self._root = root
 
     def __str__(self) -> str:
