@@ -46,7 +46,7 @@ unnecessary data copying.
   overflows on larger datasets.
 
 - **Heterogeneous Key Comparison**: Python 3 natively raises a
-  `TypeError` when comparing different types (e.g., `None < 1`). 
+  `TypeError` when comparing different types (e.g., `None < 1`).
   To pass tests with mixed-type keys, a `_key_rank` utility maps
   types to integer priorities, ensuring safe and deterministic
   BST ordering.
@@ -55,3 +55,4 @@ unnecessary data copying.
   `empty()` as the identity element and `concat()` as the binary
   operation. Property tests verify both left/right identity and
   associativity laws.
+  

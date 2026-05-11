@@ -4,7 +4,6 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from binary_tree_dict import (
-    BinaryTreeDict,
     concat,
     cons,
     empty,
@@ -16,9 +15,7 @@ from binary_tree_dict import (
     member,
     reduce_lst,
     remove,
-    reverse,
-    to_list,
-    iterator
+    to_list
 )
 
 
