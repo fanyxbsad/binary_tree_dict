@@ -4,7 +4,8 @@ from typing import (
     Any,
     List,
     Tuple,
-    Iterator as IterType
+    Iterator as IterType,
+    Optional
 )
 
 
@@ -37,8 +38,8 @@ class _Node:
         self,
         key: Any,
         value: Any,
-        left: '_Node' = None,
-        right: '_Node' = None
+        left: Optional['_Node'] = None,    # 修复 1: 加上 Optional
+        right: Optional['_Node'] = None    # 修复 2: 加上 Optional
     ):
         self.key = key
         self.value = value
@@ -49,7 +50,7 @@ class _Node:
 class BinaryTreeDict:
     """External representation of immutable binary tree dict."""
 
-    def __init__(self, root: _Node = None):
+    def __init__(self, root: Optional[_Node] = None):  # 修复 3: 加上 Optional
         self._root = root
 
     def __str__(self) -> str:
@@ -74,7 +75,7 @@ class BinaryTreeDict:
         return _inorder_gen(self._root)
 
 
-def _inorder_gen(node: _Node) -> IterType[Any]:
+def _inorder_gen(node: Optional[_Node]) -> IterType[Any]:
     """Recursive inorder generator, yields keys only."""
     if node is None:
         return
@@ -83,8 +84,12 @@ def _inorder_gen(node: _Node) -> IterType[Any]:
     yield from _inorder_gen(node.right)
 
 
-def _remove_min(node: _Node) -> Tuple[Any, Any, _Node]:
+def _remove_min(
+    node: Optional[_Node]
+) -> Tuple[Any, Any, Optional[_Node]]:
     """Find and remove the minimum node in subtree."""
+    if node is None:
+        raise ValueError("Node cannot be None")
     if node.left is None:
         return node.key, node.value, node.right
     mk, mv, new_left = _remove_min(node.left)
@@ -104,7 +109,7 @@ def cons(
     d: BinaryTreeDict
 ) -> BinaryTreeDict:
     """Recursively insert/update key-value, returns new dict."""
-    def _insert(node: _Node) -> _Node:
+    def _insert(node: Optional[_Node]) -> Optional[_Node]:
         if node is None:
             return _Node(key, value)
         if key == node.key:
@@ -131,7 +136,7 @@ def cons(
 
 def member(key: Any, d: BinaryTreeDict) -> bool:
     """Recursively check if key exists."""
-    def _mem(node: _Node) -> bool:
+    def _mem(node: Optional[_Node]) -> bool:
         if node is None:
             return False
         if key == node.key:
@@ -147,7 +152,7 @@ def remove(
     key: Any
 ) -> BinaryTreeDict:
     """Recursively remove key, returns new dict."""
-    def _del(node: _Node) -> _Node:
+    def _del(node: Optional[_Node]) -> Optional[_Node]:
         if node is None:
             return None
         if _lt(key, node.key):
@@ -178,7 +183,7 @@ def remove(
 
 def length(d: BinaryTreeDict) -> int:
     """Recursively calculate dict size."""
-    def _len(node: _Node) -> int:
+    def _len(node: Optional[_Node]) -> int:
         if node is None:
             return 0
         return 1 + _len(node.left) + _len(node.right)
@@ -189,7 +194,7 @@ def to_list(d: BinaryTreeDict) -> List[Tuple[Any, Any]]:
     """Recursively convert to Python list via inorder traversal."""
     res = []
 
-    def _builder(node: _Node):
+    def _builder(node: Optional[_Node]):
         if node is None:
             return
         _builder(node.left)
@@ -240,9 +245,9 @@ def reverse(d: BinaryTreeDict) -> BinaryTreeDict:
 def find(
     d: BinaryTreeDict,
     predicate: Callable[[Any, Any], bool]
-) -> Tuple[Any, Any]:
+) -> Optional[Tuple[Any, Any]]:
     """Recursively find first pair matching predicate."""
-    def _find(node: _Node):
+    def _find(node: Optional[_Node]):
         if node is None:
             return None
         left_res = _find(node.left)

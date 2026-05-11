@@ -26,11 +26,11 @@ unnecessary data copying.
 ## Changelog
 
 - 11.05.2026 - 2
-  - Add property-based tests for monoid laws and immutability.
+- Add property-based tests for monoid laws and immutability.
 - 10.05.2026 - 1
-  - Implement functional API (`cons`, `remove`, `map`, etc.).
+- Implement functional API (`cons`, `remove`, `map`, etc.).
 - 10.05.2026 - 0
-  - Initial project structure setup.
+- Initial project structure setup.
 
 ## Design notes
 
@@ -55,4 +55,3 @@ unnecessary data copying.
   `empty()` as the identity element and `concat()` as the binary
   operation. Property tests verify both left/right identity and
   associativity laws.
-  
