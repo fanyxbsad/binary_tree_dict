@@ -1,12 +1,22 @@
+from __future__ import annotations
+
 from functools import reduce
 from typing import (
-    Callable,
     Any,
+    Callable,
+    Generic,
+    Iterator,
     List,
+    Optional,
     Tuple,
-    Iterator as IterType,
-    Optional
+    TypeVar,
 )
+
+# Type variables for generic dictionary keys and values
+K = TypeVar("K")
+V = TypeVar("V")
+V2 = TypeVar("V2")
+A = TypeVar("A")
 
 
 def _key_rank(k: Any) -> int:
@@ -30,27 +40,28 @@ def _lt(k1: Any, k2: Any) -> bool:
     return k1 < k2
 
 
-class _Node:
+class _Node(Generic[K, V]):
     """Internal immutable binary search tree node."""
-    __slots__ = ('key', 'value', 'left', 'right')
+
+    __slots__ = ("key", "value", "left", "right")
 
     def __init__(
         self,
-        key: Any,
-        value: Any,
-        left: Optional['_Node'] = None,
-        right: Optional['_Node'] = None
-    ):
+        key: K,
+        value: V,
+        left: Optional[_Node[K, V]] = None,
+        right: Optional[_Node[K, V]] = None,
+    ) -> None:
         self.key = key
         self.value = value
         self.left = left
         self.right = right
 
 
-class BinaryTreeDict:
+class BinaryTreeDict(Generic[K, V]):
     """External representation of immutable binary tree dict."""
 
-    def __init__(self, root: Optional[_Node] = None):
+    def __init__(self, root: Optional[_Node[K, V]] = None) -> None:
         self._root = root
 
     def __str__(self) -> str:
@@ -61,7 +72,7 @@ class BinaryTreeDict:
         if not isinstance(other, BinaryTreeDict):
             return False
 
-        def _safe_sort_key(item):
+        def _safe_sort_key(item: Tuple[Any, Any]) -> Tuple[int, Any]:
             k, v = item
             return (_key_rank(k), k)
 
@@ -71,11 +82,11 @@ class BinaryTreeDict:
             to_list(other), key=_safe_sort_key
         )
 
-    def __iter__(self) -> IterType[Any]:
+    def __iter__(self) -> Iterator[K]:
         return _inorder_gen(self._root)
 
 
-def _inorder_gen(node: Optional[_Node]) -> IterType[Any]:
+def _inorder_gen(node: Optional[_Node[K, V]]) -> Iterator[K]:
     """Recursive inorder generator, yields keys only."""
     if node is None:
         return
@@ -85,8 +96,8 @@ def _inorder_gen(node: Optional[_Node]) -> IterType[Any]:
 
 
 def _remove_min(
-    node: Optional[_Node]
-) -> Tuple[Any, Any, Optional[_Node]]:
+    node: _Node[K, V],
+) -> Tuple[K, V, Optional[_Node[K, V]]]:
     """Find and remove the minimum node in subtree."""
     if node is None:
         raise ValueError("Node cannot be None")
@@ -98,18 +109,19 @@ def _remove_min(
     return mk, mv, _Node(node.key, node.value, new_left, node.right)
 
 
-def empty() -> BinaryTreeDict:
+def empty() -> BinaryTreeDict[K, V]:
     """Monoid identity element."""
     return BinaryTreeDict()
 
 
 def cons(
-    key: Any,
-    value: Any,
-    d: BinaryTreeDict
-) -> BinaryTreeDict:
+    key: K,
+    value: V,
+    d: BinaryTreeDict[K, V],
+) -> BinaryTreeDict[K, V]:
     """Recursively insert/update key-value, returns new dict."""
-    def _insert(node: Optional[_Node]) -> Optional[_Node]:
+
+    def _insert(node: Optional[_Node[K, V]]) -> Optional[_Node[K, V]]:
         if node is None:
             return _Node(key, value)
         if key == node.key:
@@ -134,9 +146,10 @@ def cons(
     return BinaryTreeDict(_insert(d._root))
 
 
-def member(key: Any, d: BinaryTreeDict) -> bool:
+def member(key: K, d: BinaryTreeDict[K, V]) -> bool:
     """Recursively check if key exists."""
-    def _mem(node: Optional[_Node]) -> bool:
+
+    def _mem(node: Optional[_Node[K, V]]) -> bool:
         if node is None:
             return False
         if key == node.key:
@@ -144,15 +157,17 @@ def member(key: Any, d: BinaryTreeDict) -> bool:
         if _lt(key, node.key):
             return _mem(node.left)
         return _mem(node.right)
+
     return _mem(d._root)
 
 
 def remove(
-    d: BinaryTreeDict,
-    key: Any
-) -> BinaryTreeDict:
+    d: BinaryTreeDict[K, V],
+    key: K,
+) -> BinaryTreeDict[K, V]:
     """Recursively remove key, returns new dict."""
-    def _del(node: Optional[_Node]) -> Optional[_Node]:
+
+    def _del(node: Optional[_Node[K, V]]) -> Optional[_Node[K, V]]:
         if node is None:
             return None
         if _lt(key, node.key):
@@ -181,20 +196,22 @@ def remove(
     return BinaryTreeDict(_del(d._root))
 
 
-def length(d: BinaryTreeDict) -> int:
+def length(d: BinaryTreeDict[K, V]) -> int:
     """Recursively calculate dict size."""
-    def _len(node: Optional[_Node]) -> int:
+
+    def _len(node: Optional[_Node[K, V]]) -> int:
         if node is None:
             return 0
         return 1 + _len(node.left) + _len(node.right)
+
     return _len(d._root)
 
 
-def to_list(d: BinaryTreeDict) -> List[Tuple[Any, Any]]:
+def to_list(d: BinaryTreeDict[K, V]) -> List[Tuple[K, V]]:
     """Recursively convert to Python list via inorder traversal."""
-    res = []
+    res: List[Tuple[K, V]] = []
 
-    def _builder(node: Optional[_Node]):
+    def _builder(node: Optional[_Node[K, V]]) -> None:
         if node is None:
             return
         _builder(node.left)
@@ -205,9 +222,10 @@ def to_list(d: BinaryTreeDict) -> List[Tuple[Any, Any]]:
     return res
 
 
-def from_list(lst: List[Tuple[Any, Any]]) -> BinaryTreeDict:
+def from_list(lst: List[Tuple[K, V]]) -> BinaryTreeDict[K, V]:
     """Tail-recursively build dict from Python list."""
-    def _from(idx: int, acc: BinaryTreeDict) -> BinaryTreeDict:
+
+    def _from(idx: int, acc: BinaryTreeDict[K, V]) -> BinaryTreeDict[K, V]:
         if idx == len(lst):
             return acc
         k, v = lst[idx]
@@ -217,13 +235,13 @@ def from_list(lst: List[Tuple[Any, Any]]) -> BinaryTreeDict:
 
 
 def concat(
-    d1: BinaryTreeDict,
-    d2: BinaryTreeDict
-) -> BinaryTreeDict:
+    d1: BinaryTreeDict[K, V],
+    d2: BinaryTreeDict[K, V],
+) -> BinaryTreeDict[K, V]:
     """Monoid concatenation, merges d2 into d1."""
     lst2 = to_list(d2)
 
-    def _concat(idx: int, acc: BinaryTreeDict) -> BinaryTreeDict:
+    def _concat(idx: int, acc: BinaryTreeDict[K, V]) -> BinaryTreeDict[K, V]:
         if idx == len(lst2):
             return acc
         k, v = lst2[idx]
@@ -232,9 +250,12 @@ def concat(
     return _concat(0, d1)
 
 
-def reverse(d: BinaryTreeDict) -> BinaryTreeDict:
+def reverse(d: BinaryTreeDict[K, V]) -> BinaryTreeDict[K, V]:
     """Reverse to_list sequence and rebuild dict."""
-    def _reverse_list(lst: List, acc: List) -> List:
+
+    def _reverse_list(
+        lst: List[Tuple[K, V]], acc: List[Tuple[K, V]]
+    ) -> List[Tuple[K, V]]:
         if not lst:
             return acc
         return _reverse_list(lst[1:], [lst[0]] + acc)
@@ -243,11 +264,12 @@ def reverse(d: BinaryTreeDict) -> BinaryTreeDict:
 
 
 def find(
-    d: BinaryTreeDict,
-    predicate: Callable[[Any, Any], bool]
-) -> Optional[Tuple[Any, Any]]:
+    d: BinaryTreeDict[K, V],
+    predicate: Callable[[K, V], bool],
+) -> Optional[Tuple[K, V]]:
     """Recursively find first pair matching predicate."""
-    def _find(node: Optional[_Node]):
+
+    def _find(node: Optional[_Node[K, V]]) -> Optional[Tuple[K, V]]:
         if node is None:
             return None
         left_res = _find(node.left)
@@ -261,9 +283,9 @@ def find(
 
 
 def filter_lst(
-    d: BinaryTreeDict,
-    predicate: Callable[[Any, Any], bool]
-) -> BinaryTreeDict:
+    d: BinaryTreeDict[K, V],
+    predicate: Callable[[K, V], bool],
+) -> BinaryTreeDict[K, V]:
     """Higher-order function filter."""
     return from_list(
         list(filter(lambda t: predicate(t[0], t[1]), to_list(d)))
@@ -271,9 +293,9 @@ def filter_lst(
 
 
 def map_lst(
-    d: BinaryTreeDict,
-    func: Callable[[Any, Any], Any]
-) -> BinaryTreeDict:
+    d: BinaryTreeDict[K, V],
+    func: Callable[[K, V], V2],
+) -> BinaryTreeDict[K, V2]:
     """Higher-order function map."""
     return from_list(
         list(
@@ -283,21 +305,21 @@ def map_lst(
 
 
 def reduce_lst(
-    d: BinaryTreeDict,
-    func: Callable[[Any, Any, Any], Any],
-    initial: Any
-) -> Any:
+    d: BinaryTreeDict[K, V],
+    func: Callable[[A, K, V], A],
+    initial: A,
+) -> A:
     """Higher-order function reduce."""
     return reduce(
         lambda acc, t: func(acc, t[0], t[1]), to_list(d), initial
     )
 
 
-def iterator(d: BinaryTreeDict) -> Callable[[], Any]:
+def iterator(d: BinaryTreeDict[K, V]) -> Callable[[], K]:
     """Closure-style functional iterator."""
     gen = _inorder_gen(d._root)
 
-    def foo():
+    def foo() -> K:
         return next(gen)
 
     return foo

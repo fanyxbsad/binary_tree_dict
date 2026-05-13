@@ -25,7 +25,7 @@ unnecessary data copying.
 
 ## Changelog
 
-- 11.05.2026 - 2
+- 12.05.2026 - 2
 - Add property-based tests for monoid laws and immutability.
 - 10.05.2026 - 1
 - Implement functional API (`cons`, `remove`, `map`, etc.).
