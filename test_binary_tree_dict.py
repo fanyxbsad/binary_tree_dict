@@ -7,7 +7,6 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from binary_tree_dict import (
-    BinaryTreeDict,
     concat,
     cons,
     empty,
